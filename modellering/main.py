@@ -69,13 +69,36 @@ def plot_results(df):
     df_large_bank = df[df['DummyLargeBank'] == 1]
     df_small_bank = df[df['DummyLargeBank'] == 0]
     
-    # Define model for large and small banks
-    model_large_bank = PanelOLS(dependent = df_large_bank['DepositRate'], exog = df_large_bank[['PolicyRate']], entity_effects=True,  check_rank=False)
-    model_small_bank = PanelOLS(dependent = df_small_bank['DepositRate'], exog = df_small_bank[['PolicyRate']], entity_effects=True)
+    df['InteractionTerm'] = df['DummyLargeBank'] * df['PolicyRate']
     
-    # Fit model for large and small bank
-    results_large_bank = model_large_bank.fit()
-    results_small_bank = model_small_bank.fit()
+    # Definiera modell för storbanker
+    model_large_bank = PanelOLS(dependent = df_large_bank['DepositRate'], 
+                                exog = df_large_bank[['PolicyRate', 'InteractionTerm']], 
+                                entity_effects=True, 
+                                check_rank=False,
+                                drop_absorbed=True
+                                )
+    
+    # Definiera modell för nisch-/neobanker
+    model_small_bank = PanelOLS(dependent = df_small_bank['DepositRate'], 
+                                exog = df_small_bank[['PolicyRate', 'InteractionTerm']], 
+                                entity_effects=True, 
+                                check_rank=False,
+                                drop_absorbed=True
+                                )
+    
+    # Passa modell för stor- och nisch-/neobanker
+    results_large_bank = model_large_bank.fit(cov_type='clustered', 
+                                              cluster_entity=True, 
+                                              cluster_time=True, 
+                                              use_lsdv=True
+                                            )
+    
+    results_small_bank = model_small_bank.fit(cov_type='clustered', 
+                                              cluster_entity=True, 
+                                              cluster_time=True, 
+                                              use_lsdv=True
+                                              )
     
     # Plot the regression lines for DummyLargeBank == 1 and DummyLargeBank == 0
     plt.plot(df_large_bank['PolicyRate'], results_large_bank.predict(), label='Storbanker', color='#4D1355', linestyle='--')
@@ -222,6 +245,8 @@ def interaction_plot(df, interaction_col, x_col, y_col):
     plt.title(f"Interaction Plot: {x_col} vs. {y_col} across {interaction_col}", fontsize=14)
 
     plt.show()
+    
+
 
 def main():
     # Ladda in din data
@@ -238,19 +263,23 @@ def main():
     model = PanelOLS(dependent=df['DepositRate'], 
                      exog=df[['PolicyRate', 'InteractionTerm']], 
                      entity_effects=True,
-                     time_effects=True, 
-                     drop_absorbed=True)  # Droppa de absorberade variablerna (dummy kommer vara perfekt linjär)
+                     drop_absorbed=True,
+                     check_rank=False,
+                    )  
 
     # Specificera modell med klustrad entity och tid
     results = model.fit(cov_type='clustered', 
                         cluster_entity=True, 
-                        cluster_time=True)
-
+                        cluster_time=True,
+                        use_lsdv=True
+                        )
+    
     # Plotta resultaten från regressionen
     plot_results(df)  # Plotta spridningsdiagrammet av Policy Rate vs. Deposit Rate
 
     # Plotta genomsnittliga tidsserier
     plot_average_time_series(df_file_path)
+
 
     # Skriv ut resultaten från regressionen
     print(results)
