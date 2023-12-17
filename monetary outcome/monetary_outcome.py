@@ -1,7 +1,19 @@
 import os
 import pandas as pd
 
-def interpolering(column, sheet, path, frequency: str = 'D'):
+def interpolering(column: str, sheet: str, path: str, frequency: str = 'D'):
+    '''
+    Interpolerar en given dataframe till daglig data
+
+    Parametrar:
+    - column (str): namn på kolumn
+    - sheet (str): namn på excelbladet
+    - path (str): namn på sökväg till excelbok
+    - frequency (str): Den frekvens som interpoleringen ska ske till
+
+    Returns:
+    - dataframe (pandas.DataFrame): interpolerad dataframe
+    '''
     
     # Läs in excelfil
     df = pd.read_excel(path, sheet_name=sheet)
@@ -63,7 +75,6 @@ def outcome(storbank: bool = True, print_outcome: bool = False):
     # Beräkna multiplikatorn för varje datum
     if storbank:
         multiplier = (1 + df_pr['Rate'] * (beta_pr - beta_interactionterm)) ** (1/365) -1
-
     else:
         multiplier = (1 + df_pr['Rate'] * beta_pr) ** (1/365) - 1
 
@@ -80,11 +91,15 @@ def outcome(storbank: bool = True, print_outcome: bool = False):
 
 
 def main():
-    print(f'\nStorbank: {outcome(storbank=True, print_outcome=True)}')
-    print(f'Nischbank: {outcome(storbank=False, print_outcome=True)}')
+    print(f'\nStorbank: {outcome(storbank=True, print_outcome=True)} MSEK')
+    print(f'Nischbank: {outcome(storbank=False, print_outcome=True)} MSEK')
 
     diff = outcome(storbank=False) - outcome(storbank=True)
-    print(f'Skillnad = (Nischbank - Storbank) = {diff}')
+    print(f'Skillnad = (Nischbank - Storbank) = {diff} MSEK')
 
+# Kör om kod körs direkt som skript och inte importerat bibliotek
 if __name__ == '__main__':
     main()
+
+
+
