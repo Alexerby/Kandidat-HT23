@@ -8,6 +8,10 @@ import warnings
 
 
 def save_fig(save_path):
+    '''
+    Kan användas vid nedladdning av figurer,
+    används ej för nuvarande
+    '''
     if save_path:
         plt.savefig(save_path)
 
@@ -120,7 +124,6 @@ def plot_results(df):
     plt.legend(fontsize=12)
     
     plt.show()
-    plt.savefig('figures/average_deposit_rates.png')
 
 
 
@@ -170,7 +173,6 @@ def plot_average_time_series(file_path):
     plt.ylabel('Ränta (%)')
     plt.legend()
     plt.show()
-    plt.savefig('figures/average_time_series.png')
     
 
     
@@ -230,7 +232,6 @@ def plot_shaded_area_with_percentiles_median_and_policy_rate(file_path):
     plt.ylabel('Ränta (%)')
     plt.legend()
     plt.show()
-    plt.savefig('figures/shaded_area_with_percentiles.png')
 
 def interaction_plot(df, interaction_col, x_col, y_col):
     """
