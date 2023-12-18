@@ -34,7 +34,8 @@ def interpolering(column: str, sheet: str, path: str, frequency: str = 'D'):
 
     return df
 
-def policy_rate(path, sheet, column, start_date='2023-04-01', end_date='2023-08-01'):
+
+def policy_rate(path, sheet, column, start_date='2022-04-01', end_date='2023-08-01'):
     df = pd.read_excel(path, sheet_name=sheet)
     df['Date'] = pd.to_datetime(df['Date'])
     df.set_index('Date', inplace=True)
@@ -51,8 +52,9 @@ def outcome(storbank: bool = True, print_outcome: bool = False):
     baserat på koefficienterna från huvudregression.
 
     Parametrar:
-    - storbank (bool): Om True, använd en större bankmultiplikator med ett interaktionsterm;
-                      om False, använd en standardmultiplikator för mindre banker.
+    - storbank (bool):      Om True, använd en större bankmultiplikator med ett interaktionsterm;
+                            om False, använd en standardmultiplikator för mindre banker.
+    
     - print_outcome (bool): Om True, skriv ut det beräknade utfallet; standard är False.
 
     Returns:
