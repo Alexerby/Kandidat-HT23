@@ -4,6 +4,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 import matplotlib.ticker as mticker
+import warnings
+
+
+def save_fig(save_path):
+    if save_path:
+        plt.savefig(save_path)
 
 
 def is_major_bank(account):
@@ -47,7 +53,7 @@ def get_data(path):
     # Set the 'Account' level as the index
     df = df.set_index(['Account', 'Date'])
 
-    # Create the "DummyLargeBank" column using the 'Account' level
+    # Skapa 'DummyLargeBank' kolumn efter 'Account'
     df['DummyLargeBank'] = df.index.get_level_values('Account').map(is_major_bank)
     return df
 
@@ -63,9 +69,9 @@ def plot_results(df):
     ---------
     Ingen retur. Plottar resultaten av regressionsanalysen för stora och små banker.
     """
-    plt.figure(figsize=(10, 6))  # Adjust the figure size
+    plt.figure(figsize=(10, 6))  
     
-    # Separate the DataFrame based on 'DummyLargeBank' values
+    # Separera dataframe baserad på 'DummyLargeBank' värde
     df_large_bank = df[df['DummyLargeBank'] == 1]
     df_small_bank = df[df['DummyLargeBank'] == 0]
     
@@ -99,22 +105,24 @@ def plot_results(df):
                                               cluster_time=True, 
                                               use_lsdv=True
                                               )
-    
-    # Plot the regression lines for DummyLargeBank == 1 and DummyLargeBank == 0
+    # Plotta regression för linjer DummyLargeBank == 1 och DummyLarbeBank == 0
     plt.plot(df_large_bank['PolicyRate'], results_large_bank.predict(), label='Storbanker', color='#4D1355', linestyle='--')
     plt.plot(df_small_bank['PolicyRate'], results_small_bank.predict(), label='Mindre banker', color='#1B5513', linestyle='--')
     
-    # Formatting for the graph
+    #  Grafformattering
     ax = plt.gca()
     ax.xaxis.set_major_formatter(mticker.PercentFormatter(xmax=1.0))
     ax.yaxis.set_major_formatter(mticker.PercentFormatter(xmax=1.0))
     plt.xlabel("Styrränta", fontsize=14)
     plt.ylabel("Inlåningsränta", fontsize=14)
     plt.title(f"Regression", fontsize=14)
-    plt.grid(True, linestyle='--', alpha=0.2)  # Add grid lines
+    plt.grid(True, linestyle='--', alpha=0.2)
     plt.legend(fontsize=12)
     
     plt.show()
+    plt.savefig('figures/average_deposit_rates.png')
+
+
 
 def plot_average_time_series(file_path):
     """
@@ -129,33 +137,29 @@ def plot_average_time_series(file_path):
     ---------
     Ingen retur. Plottar resultaten av regressionsanalysen för stora och små banker.
     """
-    # Read the 'Filtered Deposit Rates' data into a DataFrame
+
     df_deposit_rates = pd.read_excel(file_path, parse_dates=['Date'], sheet_name="Filtered Deposit Rates")
 
-    # Set the 'Date' column as the index
+    # Sätt datum kolumn som index 
     df_deposit_rates.set_index('Date', inplace=True)
 
-    # Convert columns to numeric (replace ',' with '.')
+    # Konvertera kolumner till numerisk och ersätt (ersätt ',' med '.')
     for col in df_deposit_rates.columns:
-        # Check if the column contains string values before conversion
-        if df_deposit_rates[col].dtype == 'O':  # 'O' represents Object (string) dtype
+        if df_deposit_rates[col].dtype == 'O':  
             df_deposit_rates[col] = pd.to_numeric(df_deposit_rates[col].str.replace(',', '.'))
 
-    # Separate the DataFrame based on the 'is_major_bank' function
+    # Separera dataframes baserad på om banken är klassifierad som storbank eller ej 
     df_major_bank = df_deposit_rates[df_deposit_rates.columns[df_deposit_rates.columns.map(is_major_bank) == 1]]
     df_minor_bank = df_deposit_rates[df_deposit_rates.columns[df_deposit_rates.columns.map(is_major_bank) == 0]]
 
-    # Create two new columns for average values
     df_deposit_rates['AverageLargeBanks'] = df_major_bank.mean(axis=1)
     df_deposit_rates['AverageSmallBanks'] = df_minor_bank.mean(axis=1)
 
-    # Read the 'Policy Rate' data into a separate DataFrame
     df_policy_rate = pd.read_excel(file_path, parse_dates=['Date'], sheet_name="Policy Rate")
 
-    # Set the 'Date' column as the index
     df_policy_rate.set_index('Date', inplace=True)
 
-    # Plot the average time series and policy rate
+    # Plot-inställningar
     plt.figure(figsize=(10, 6))
     plt.plot(df_deposit_rates.index, df_deposit_rates['AverageLargeBanks'], label='Medelvärde storbanker', color='#552c13')
     plt.plot(df_deposit_rates.index, df_deposit_rates['AverageSmallBanks'], label='Medelvärde mindre banker', color='#133455')
@@ -166,6 +170,9 @@ def plot_average_time_series(file_path):
     plt.ylabel('Ränta (%)')
     plt.legend()
     plt.show()
+    plt.savefig('figures/average_time_series.png')
+    
+
     
 def plot_shaded_area_with_percentiles_median_and_policy_rate(file_path):
     """
@@ -223,6 +230,7 @@ def plot_shaded_area_with_percentiles_median_and_policy_rate(file_path):
     plt.ylabel('Ränta (%)')
     plt.legend()
     plt.show()
+    plt.savefig('figures/shaded_area_with_percentiles.png')
 
 def interaction_plot(df, interaction_col, x_col, y_col):
     """
@@ -237,7 +245,6 @@ def interaction_plot(df, interaction_col, x_col, y_col):
 
     plt.figure(figsize=(10, 6))
 
-    # Use seaborn's `relplot` for an interaction plot
     sns.relplot(x=x_col, y=y_col, hue=interaction_col, data=df, palette='viridis', kind='line')
 
     plt.xlabel(x_col, fontsize=14)
