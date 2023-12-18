@@ -268,7 +268,7 @@ def plot_shaded_area_with_percentiles_median_and_policy_rate(file_path):
                      alpha=0.4, label='Inlåningsränta (25:e-75:e percentilen)')
 
     # Plotta medianvärdet som en tidsserielinje
-    plt.plot(df_deposit_rates.index, median_values, color='#133455', label='Median inlåning')
+    plt.plot(df_deposit_rates.index, median_values, color='#133455', label='Median inlåningsränta')
 
     # Plotta styrräntan som en tidsserielinje
     plt.plot(df_policy_rate.index, df_policy_rate['Rate'], color='#218c74', label='Styrränta', linestyle='--')
@@ -298,7 +298,6 @@ def interaction_plot(df, interaction_col, x_col, y_col):
     plt.xlabel(x_col, fontsize=14)
     plt.ylabel(y_col, fontsize=14)
     plt.title(f"Interaction Plot: {x_col} vs. {y_col} across {interaction_col}", fontsize=14)
-
     plt.show()
     
 
