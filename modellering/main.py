@@ -303,17 +303,13 @@ def interaction_plot(df, interaction_col, x_col, y_col):
 
 
 def main():
-    # Ladda in din data
     df = get_data("../Färdig Data/Melted df.xlsx")
     df_file_path = "../Färdig Data/Färdig data.xlsx"
 
-    # Plotta skuggat område med percentiler, median och styrränta
-    plot_shaded_area_with_percentiles_median_and_policy_rate(df_file_path)
-
-    # Skapa en interaktionsterm mellan "DummyLargeBank" och "PolicyRate"
+    # Definiera interaktionsterm
     df['InteractionTerm'] = df['DummyLargeBank'] * df['PolicyRate']
 
-    # Utför fixed-effects regression med entity fixed effects 
+    # Definiera modell
     model = PanelOLS(dependent=df['DepositRate'], 
                      exog=df[['PolicyRate', 'InteractionTerm']], 
                      entity_effects=True,
@@ -321,21 +317,19 @@ def main():
                      check_rank=False,
                     )  
 
-    # Specificera modell med klustrad entity och tid
+    # Passa modell
     results = model.fit(cov_type='clustered', 
                         cluster_entity=True, 
                         cluster_time=True,
                         use_lsdv=True
                         )
-    
-    # Plotta resultaten från regressionen
-    plot_results(df)  # Plotta spridningsdiagrammet av Policy Rate vs. Deposit Rate
 
-    # Plotta genomsnittliga tidsserier
+    # Plottnings av grafer 
+    plot_shaded_area_with_percentiles_median_and_policy_rate(df_file_path)
+    plot_results(df)  # Plot the scatter plot of Policy Rate vs. Deposit Rate
     plot_average_time_series(df_file_path)
 
-
-    # Skriv ut resultaten från regressionen
+    # Printa resultat av regression
     print(results)
 
 
