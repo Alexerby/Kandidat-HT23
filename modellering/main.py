@@ -5,6 +5,43 @@ import numpy as np
 import seaborn as sns
 import matplotlib.ticker as mticker
 import warnings
+from matplotlib.ticker import FuncFormatter
+
+
+
+def extract_stibor(path='../Färdig data/STIBOR.xlsx', sheet='Sheet1', col='Tom/Next'):
+    try:
+        df = pd.read_excel(path,
+                           sheet_name=sheet,
+                           header=2,
+                           index_col='Date',
+                           usecols=['Date', col])
+
+        # Reindex to include the desired start date
+        start_date = '2017-12-29'
+        end_date = '2023-08-01'
+        date_range = pd.date_range(start=start_date, end=end_date, freq='D')
+        df = df.reindex(date_range)
+
+        # Perform daily interpolation
+        df = df.interpolate(method='linear', axis=0)
+
+        # Filter the DataFrame for the specified date range
+        start_date = '2018-01-01'
+        df = df.loc[start_date:end_date]
+
+        # Convert values to percentages (divide by 100)
+        df[col] = df[col] / 100
+
+        return df[col]
+
+    except FileNotFoundError:
+        print(f"Error: File '{path}' not found.")
+        return pd.DataFrame()
+    except pd.errors.SheetNameNotFound:
+        print(f"Error: Sheet '{sheet}' not found in the Excel file.")
+        return pd.DataFrame()
+
 
 
 def save_fig(save_path):
@@ -60,6 +97,7 @@ def get_data(path):
     # Skapa 'DummyLargeBank' kolumn efter 'Account'
     df['DummyLargeBank'] = df.index.get_level_values('Account').map(is_major_bank)
     return df
+
 
 def plot_results(df):
     """
@@ -125,8 +163,6 @@ def plot_results(df):
     
     plt.show()
 
-
-
 def plot_average_time_series(file_path):
     """
     Funktion för att plotta genomsnittliga tidsserier baserat på bankstorlek.
@@ -166,14 +202,16 @@ def plot_average_time_series(file_path):
     plt.figure(figsize=(10, 6))
     plt.plot(df_deposit_rates.index, df_deposit_rates['AverageLargeBanks'], label='Medelvärde storbanker', color='#552c13')
     plt.plot(df_deposit_rates.index, df_deposit_rates['AverageSmallBanks'], label='Medelvärde mindre banker', color='#133455')
+    plt.plot(df_deposit_rates.index, extract_stibor(), label='STIBOR (dag)', color='red')
     plt.plot(df_policy_rate.index, df_policy_rate['Rate'], label='Styrränta', color='#218c74')
 
-    plt.title('Medelvärde inlåningsräntor (och styrränta)')
+    plt.gca().yaxis.set_major_formatter(FuncFormatter(lambda y, _: '{:.0%}'.format(y)))  # Format y-axis as percentage
+
+    plt.title('Inlåningsräntor, styrränta & STIBOR')
     plt.xlabel('Tid')
     plt.ylabel('Ränta (%)')
     plt.legend()
     plt.show()
-    
 
     
 def plot_shaded_area_with_percentiles_median_and_policy_rate(file_path):
@@ -216,10 +254,18 @@ def plot_shaded_area_with_percentiles_median_and_policy_rate(file_path):
     plt.figure(figsize=(10, 6))
     
     # Skugga området mellan 10:e och 90:e percentilen med en ljusare skugga
-    plt.fill_between(df_deposit_rates.index, percentile_values[0], percentile_values[-1], color='gray', alpha=0.2, label='Inlåningsränta (10:e-90:e percentilen)')
+    plt.fill_between(df_deposit_rates.index, 
+                     percentile_values[0], 
+                     percentile_values[-1], 
+                     color='gray', alpha=0.2, 
+                     label='Inlåningsränta (10:e-90:e percentilen)')
 
     # Skugga området mellan 25:e och 75:e percentilen med en mörkare skugga
-    plt.fill_between(df_deposit_rates.index, percentile_values[1], percentile_values[3], color='gray', alpha=0.4, label='Inlåningsränta (25:e-75:e percentilen)')
+    plt.fill_between(df_deposit_rates.index, 
+                     percentile_values[1], 
+                     percentile_values[3], 
+                     color='gray', 
+                     alpha=0.4, label='Inlåningsränta (25:e-75:e percentilen)')
 
     # Plotta medianvärdet som en tidsserielinje
     plt.plot(df_deposit_rates.index, median_values, color='#133455', label='Median inlåning')
@@ -231,6 +277,7 @@ def plot_shaded_area_with_percentiles_median_and_policy_rate(file_path):
     plt.xlabel('Tid')
     plt.ylabel('Ränta (%)')
     plt.legend()
+    plt.gca().yaxis.set_major_formatter(FuncFormatter(lambda y, _: '{:.0%}'.format(y)))  # Format y-axis as percentage
     plt.show()
 
 def interaction_plot(df, interaction_col, x_col, y_col):
