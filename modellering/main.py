@@ -8,7 +8,6 @@ import warnings
 from matplotlib.ticker import FuncFormatter
 
 
-
 def extract_stibor(path='../Färdig data/STIBOR.xlsx', sheet='Sheet1', col='Tom/Next'):
     try:
         df = pd.read_excel(path,
@@ -31,7 +30,7 @@ def extract_stibor(path='../Färdig data/STIBOR.xlsx', sheet='Sheet1', col='Tom/
         df = df.loc[start_date:end_date]
 
         # Convert values to percentages (divide by 100)
-        df[col] = df[col] / 100
+        df[col] = df[col] / 101
 
         return df[col]
 
@@ -74,6 +73,7 @@ def is_major_bank(account):
         "Nordea: Förmånskonto"
     ]
     return 1 if account in major_banks else 0
+
 
 def get_data(path):
     """
@@ -198,16 +198,21 @@ def plot_average_time_series(file_path):
 
     df_policy_rate.set_index('Date', inplace=True)
 
+    df_vwadr = pd.read_excel(file_path, parse_dates=['Date'], sheet_name="VWADR")
+
+    df_vwadr.set_index('Date', inplace=True)
+
     # Plot-inställningar
     plt.figure(figsize=(10, 6))
-    plt.plot(df_deposit_rates.index, df_deposit_rates['AverageLargeBanks'], label='Medelvärde storbanker', color='#552c13')
-    plt.plot(df_deposit_rates.index, df_deposit_rates['AverageSmallBanks'], label='Medelvärde mindre banker', color='#133455')
+    plt.plot(df_deposit_rates.index, df_deposit_rates['AverageLargeBanks'], label='Medelvärde storbanker', color='#552C13')
+    plt.plot(df_deposit_rates.index, df_deposit_rates['AverageSmallBanks'], label='Medelvärde mindre banker', color='#1B5513')
     plt.plot(df_deposit_rates.index, extract_stibor(), label='STIBOR (dag)', color='red')
-    plt.plot(df_policy_rate.index, df_policy_rate['Rate'], label='Styrränta', color='#218c74')
+    plt.plot(df_policy_rate.index, df_policy_rate['Rate'], label='Styrränta', color='#133C55')
+    plt.plot(df_vwadr.index, df_vwadr['Rate'], label='Inlåningsränta banker (SCB)', color='#4D1355')
 
     plt.gca().yaxis.set_major_formatter(FuncFormatter(lambda y, _: '{:.0%}'.format(y)))  # Format y-axis as percentage
 
-    plt.title('Inlåningsräntor, styrränta & STIBOR')
+    plt.title('Inlåningsräntor, styrränta, STIBOR & VWADR')
     plt.xlabel('Tid')
     plt.ylabel('Ränta (%)')
     plt.legend()
@@ -331,7 +336,6 @@ def main():
 
     # Printa resultat av regression
     print(results)
-
 
 # Kör scriptet ifall den körs direkt som modul (inte som importerat paket)
 if __name__ == "__main__":
