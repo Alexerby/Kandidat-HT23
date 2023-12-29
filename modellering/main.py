@@ -212,7 +212,7 @@ def plot_average_time_series(file_path):
 
     plt.gca().yaxis.set_major_formatter(FuncFormatter(lambda y, _: '{:.0%}'.format(y)))  # Format y-axis as percentage
 
-    plt.title('Inlåningsräntor, styrränta, STIBOR & VWADR')
+    plt.title('Inlåningsräntor, styrränta, STIBOR & Genomsnittlig inlåningsränta')
     plt.xlabel('Tid')
     plt.ylabel('Ränta (%)')
     plt.legend()
