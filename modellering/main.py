@@ -206,7 +206,7 @@ def plot_average_time_series(file_path):
     plt.figure(figsize=(10, 6))
     plt.plot(df_deposit_rates.index, df_deposit_rates['AverageLargeBanks'], label='Medelvärde storbanker', color='#552C13')
     plt.plot(df_deposit_rates.index, df_deposit_rates['AverageSmallBanks'], label='Medelvärde mindre banker', color='#1B5513')
-    plt.plot(df_deposit_rates.index, extract_stibor(), label='STIBOR (dag)', color='red')
+    plt.plot(df_deposit_rates.index, extract_stibor(), label='STIBOR (T/N)', color='red')
     plt.plot(df_policy_rate.index, df_policy_rate['Rate'], label='Styrränta', color='#133C55')
     plt.plot(df_vwadr.index, df_vwadr['Rate'], label='Inlåningsränta banker (SCB)', color='#4D1355')
 
